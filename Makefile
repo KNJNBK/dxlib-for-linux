@@ -1,4 +1,4 @@
-SHELL := /bin/bash
+SHELL := $(shell command -v bash 2>/dev/null || echo /bin/sh)
 
 DXLIB_VER := 3_24f
 
@@ -7,11 +7,14 @@ UNZIP := unzip
 CXX := g++
 
 # 環境、要不要に応じて変更してください
+PKG_CONFIG := pkg-config
+DEP_CFLAGS := $(shell $(PKG_CONFIG) --cflags opusfile opus ogg vorbis vorbisfile theora libpng libjpeg libtiff-4 openal 2>/dev/null)
+
 CXXFLAGS := -g -O0 \
 -DDX_NON_BULLET_PHYSICS \
 -DDX_NON_LIVE2D_CUBISM4 \
 -I insufficient_include \
--I /usr/include/opus \
+$(DEP_CFLAGS) \
 #-I clib/prefix/include \
 #-I clib/prefix/include/opus \
 #-DDX_NON_JPEGREAD \
@@ -244,7 +247,7 @@ DxLibMake/.patched: DxLibMake/.extracted
 extract-source: DxLibMake/.extracted
 
 DxLibMake/.extracted: DxLibMake$(DXLIB_VER).zip
-	$(UNZIP) -O cp932 DxLibMake$(DXLIB_VER).zip
+	$(UNZIP) -o DxLibMake$(DXLIB_VER).zip
 	find DxLibMake -type f | while read f; do cat "$$f" | tr -d '\r' > tmp; \
     (iconv -f utf-8 -t utf-8 tmp -o "$$f" 2>/dev/null) \
     || (iconv -f cp932 -t utf-8 tmp -o "$$f"); rm -f tmp; done
